@@ -199,17 +199,10 @@ select {
   width: 30px;
   border-right: none;
 }
-.drp-popup .drp-calendar .drp-days li.drp-day-in-range {
-  color: #2a91ca;
-  background-color: #ddf3fe;
-  border-color: #ddf3fe;
-}
-.drp-popup .drp-calendar .drp-days li.drp-day-last-in-range {
-  border-color: white;
-}
+
 .drp-popup .drp-calendar .drp-days li.drp-day-selected, .drp-popup .drp-calendar .drp-days li:hover {
   color: #efefef;
-  background-color: #2a91ca;
+  background-color: #d6d6d6;
 }
 .drp-popup .drp-calendar .drp-days li.drp-day-disabled {
   color: #cccccc;
@@ -227,7 +220,7 @@ select {
   border-top: 1px solid #e0e0e0;
 }
 .drp-popup .drp-calendar:first-child .drp-day-selected {
-  border-color: #ddf3fe;
+  border-color: #d6d6d6;
 }
 .drp-popup .drp-calendar-date {
   position: absolute;

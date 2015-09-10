@@ -18,10 +18,10 @@
 		,Q = 'q'
 		,_replace = "replace"
 		/**
-		 * Ìí¼Ó¼àÌıÊÂ¼ş¡£
-		 * @param element {Element} ×¢²á·½·¨µÄ¶ÔÏó¡£
-		 * @param type {String} Òª×¢²á·½·¨µÄÊÂ¼ş¡£
-		 * @param listener {Function} Ãæ¼ÓÔØÍê±ÏµÄ»Øµ÷·½·¨¡£
+		 * æ·»åŠ ç›‘å¬äº‹ä»¶ã€‚
+		 * @param element {Element} æ³¨å†Œæ–¹æ³•çš„å¯¹è±¡ã€‚
+		 * @param type {String} è¦æ³¨å†Œæ–¹æ³•çš„äº‹ä»¶ã€‚
+		 * @param listener {Function} é¢åŠ è½½å®Œæ¯•çš„å›è°ƒæ–¹æ³•ã€‚
 		 * @param useCapture {Boolean} 
 		 */
 		,AddListener = function(element, type, listener, useCapture){
@@ -33,33 +33,239 @@
 		};
 		
 		/** 
-	     * ²å¼ş²¿·Ö´úÂë
+	     * æ’ä»¶éƒ¨åˆ†ä»£ç 
 		 */
-		  var $, Calendar, DAYS, DateRangePicker, MONTHS, TEMPLATE;
+		  var $,
+		  Calendar,
+		  LANGUAGE_LIST,
+		  en_DAYS,
+		  en_MONTHS,
+		  zh_CN_DAYS,
+		  zh_CN_MONTHS, 
+		  TEMPLATE,
+		  DAYS,
+		  MONTHS;
 
 		  $ = jQuery;
+		  
+		  LANGUAGE_LIST = ['zh-CN','en'];
+		  
+		  zh_CN_DAYS = ['å‘¨æ—¥', 'å‘¨ä¸€', 'å‘¨äºŒ', 'å‘¨ä¸‰', 'å‘¨å››', 'å‘¨äº”', 'å‘¨å…­'];
 
-		  zh_CN_DAYS = ['ÖÜÈÕ', 'ÖÜÒ»', 'ÖÜ¶ş', 'ÖÜÈı', 'ÖÜËÄ', 'ÖÜÎå', 'ÖÜÁù'];
-
-		  zh_CN_MONTHS = ['Ò»ÔÂ', '¶şÔÂ', 'ÈıÔÂ', 'ËÄÔÂ', 'ÎåÔÂ', 'ÁùÔÂ', 'ÆßÔÂ', '°ËÔÂ', '¾ÅÔÂ', 'Ê®ÔÂ', 'Ê®Ò»ÔÂ', 'Ê®¶şÔÂ'];
+		  zh_CN_MONTHS = ['ä¸€æœˆ', 'äºŒæœˆ', 'ä¸‰æœˆ', 'å››æœˆ', 'äº”æœˆ', 'å…­æœˆ', 'ä¸ƒæœˆ', 'å…«æœˆ', 'ä¹æœˆ', 'åæœˆ', 'åä¸€æœˆ', 'åäºŒæœˆ'];
 
 		  en_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 		  en_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-		  TEMPLATE = "";
-		  
+		   DAYS = zh_CN_DAYS,
+		  MONTHS = zh_CN_MONTHS;
+		 //TEMPLATE = "<div class=\"drp-popup\"><div class=\"drp-calendar drp-calendar-start\"><div class=\"drp-month-picker\"><div class=\"drp-arrow\">&lt;</div><div class=\"drp-month-title\"></div><div class=\"drp-arrow drp-arrow-right\">&gt;</div></div><ul class=\"drp-day-headers\"></ul><ul class=\"drp-days\"></ul><div class=\"drp-calendar-date\"></div></div></div>";
+		 TEMPLATE = "<div class=\"drp-popup\">\n <div class=\"drp-calendars\">\n    <div class=\"drp-calendar drp-calendar-start\">\n      <div class=\"drp-month-picker\">\n        <div class=\"drp-arrow\"><</div>\n        <div class=\"drp-month-title\"></div>\n        <div class=\"drp-arrow drp-arrow-right\">></div>\n      </div>\n      <ul class=\"drp-day-headers\"></ul>\n      <ul class=\"drp-days\"></ul>\n      <div class=\"drp-calendar-date\"></div>\n    </div>\n </div>";
+
+		 Calendar = (function() {
+			var oThis;
+			function Calendar() {
+			  oThis = this;
+			}
+			Calendar.prototype._calendar = function(jqueryselecter, date) {
+			  var self;
+			  oThis.$calendar = $(TEMPLATE);
+			  oThis.date = date;
+			  oThis.date.setHours(0, 0, 0, 0);
+			  oThis._visibleMonth = oThis.month();
+			  oThis._visibleYear = oThis.year();
+			  oThis.$title = oThis.$calendar.find('.drp-month-title');
+			  oThis.$dayHeaders = oThis.$calendar.find('.drp-day-headers');
+			  oThis.$days = oThis.$calendar.find('.drp-days');
+			  oThis.DAYS_CLASS = {};
+			  oThis.$dateDisplay = oThis.$calendar.find('.drp-calendar-date');
+			  oThis.$calendar.find('.drp-arrow').click(function(evt) {
+				if ($(this).hasClass('drp-arrow-right')) {
+				  oThis.showNextMonth();
+				} else {
+				  oThis.showPreviousMonth();
+				}
+				return false;
+			  });
+			  
+			  $(jqueryselecter).prepend(oThis.$calendar);
+			};
+			
+			Calendar.prototype.setDayClass = function(class_date_json) {
+			  if(typeof class_date_json =='object'){
+				oThis.DAYS_CLASS = class_date_json;
+				//console.log(class_date_json);
+			  }
+			};
+			
+			Calendar.prototype.showPreviousMonth = function() {
+			  if (oThis._visibleMonth === 1) {
+				oThis._visibleMonth = 12;
+				oThis._visibleYear -= 1;
+			  } else {
+				oThis._visibleMonth -= 1;
+			  }
+			  return oThis.draw();
+			};
+
+			Calendar.prototype.showNextMonth = function() {
+			  if (oThis._visibleMonth === 12) {
+				oThis._visibleMonth = 1;
+				oThis._visibleYear += 1;
+			  } else {
+				oThis._visibleMonth += 1;
+			  }
+			  return oThis.draw();
+			};
+
+			Calendar.prototype.setDay = function(day) {
+			  oThis.setDate(oThis.visibleYear(), oThis.visibleMonth(), day);
+			};
+
+			Calendar.prototype.setDate = function(year, month, day) {
+			  oThis.date = new Date(year, month - 1, day);
+			};
+
+			Calendar.prototype.draw = function() {
+			  var day, _i, _len;
+			  oThis.$dayHeaders.empty();
+			  oThis.$title.text("" + (oThis.nameOfMonth(oThis.visibleMonth())) + " " + (oThis.visibleYear()));
+			  for (_i = 0, _len = DAYS.length; _i < _len; _i++) {
+				day = DAYS[_i];
+				oThis.$dayHeaders.append($("<li>" + (day.substr(0, 2)) + "</li>"));
+			  }
+			  oThis.drawDateDisplay();
+			  return oThis.drawDays();
+			};
+
+			Calendar.prototype.dateIsSelected = function(date) {
+			  return date.getTime() === oThis.date.getTime();
+			};
+
+			Calendar.prototype.dayClass = function(day, firstDayOfMonth, lastDayOfMonth) {
+			  var classes, date;
+			  date = new Date(oThis.visibleYear(), oThis.visibleMonth() - 1, day);
+			  classes = '';
+			  if (oThis.dateIsSelected(date)) {
+				//classes = 'drp-day-selected';
+			  }
+			  if ((day + firstDayOfMonth - 1) % 7 === 0 || day === lastDayOfMonth) {
+				classes += ' drp-day-last-in-row';
+			  }
+			  return classes;
+			};
+
+			Calendar.prototype.drawDays = function() {
+			  var firstDayOfMonth, i, lastDayOfMonth, _i, _j, _ref;
+			  oThis.$days.empty();
+			  firstDayOfMonth = oThis.firstDayOfMonth(oThis.visibleMonth(), oThis.visibleYear());
+			  lastDayOfMonth = oThis.daysInMonth(oThis.visibleMonth(), oThis.visibleYear());
+			  for (i = _i = 1, _ref = firstDayOfMonth - 1; _i <= _ref; i = _i += 1) {
+				oThis.$days.append($("<li class='drp-day drp-day-empty'></li>"));
+			  }
+			  class_date_json = oThis.DAYS_CLASS;
+			  console.log(oThis._visibleYear);//oThis.DAYS_CLASS
+			  console.log(oThis._visibleMonth);//oThis.DAYS_CLASS
+			  console.log(class_date_json);//oThis.DAYS_CLASS
+			  var _class_day = {};
+			  for(var _class in class_date_json){
+				_class_day[_class] = new Array();
+				
+				for(var year in class_date_json[_class]){
+				
+					if(year!=oThis._visibleYear) continue;
+					  for(var month in class_date_json[_class][year]){
+						if(month!=oThis._visibleMonth) continue;
+						for(var di in class_date_json[_class][year][month]){
+							var _td = class_date_json[_class][year][month][di];
+							_class_day[_class].push(_td);
+						}
+					}
+				  }
+			  }
+			  //console.log(_class_day);
+			  
+			  for (i = _j = 1; _j <= lastDayOfMonth; i = _j += 1) {
+				 var i_font_class = '',i_close_class='';
+				 for(var _class in _class_day){
+					 if(_class_day[_class].indexOf(''+i) != -1){
+						 i_font_class = "<div class="+_class+">";
+						 i_close_class = "</div>";
+					 };
+				 }
+				oThis.$days.append($("<li class='drp-day " + (oThis.dayClass(i, firstDayOfMonth, lastDayOfMonth)) + "'>" + i_font_class + i + i_close_class + "</li>"));
+			  }
+			  return oThis.$calendar.find('.drp-day').click(function(evt) {
+				var day;
+				if ($(oThis).hasClass('drp-day-disabled')) {
+				  return false;
+				}
+				day = parseInt($(oThis).text(), 10);
+				if (isNaN(day)) {
+				  return false;
+				}
+				return oThis.setDay(day);
+			  });
+			};
+
+			Calendar.prototype.drawDateDisplay = function() {
+			  return oThis.$dateDisplay.text([oThis.month(), oThis.day(), oThis.year()].join('/'));
+			};
+
+			Calendar.prototype.month = function() {
+			  return oThis.date.getMonth() + 1;
+			};
+
+			Calendar.prototype.day = function() {
+			  return oThis.date.getDate();
+			};
+
+			Calendar.prototype.dayOfWeek = function() {
+			  return oThis.date.getDay() + 1;
+			};
+
+			Calendar.prototype.year = function() {
+			  return oThis.date.getFullYear();
+			};
+
+			Calendar.prototype.visibleMonth = function() {
+			  return oThis._visibleMonth;
+			};
+
+			Calendar.prototype.visibleYear = function() {
+			  return oThis._visibleYear;
+			};
+
+			Calendar.prototype.nameOfMonth = function(month) {
+			  return MONTHS[month - 1];
+			};
+
+			Calendar.prototype.firstDayOfMonth = function(month, year) {
+			  return new Date(year, month - 1, 1).getDay() + 1;
+			};
+
+			Calendar.prototype.daysInMonth = function(month, year) {
+			  month || (month = oThis.visibleMonth());
+			  year || (year = oThis.visibleYear());
+			  return new Date(year, month, 0).getDate();
+			};
+
+			return Calendar;
+
+		  })(),calendar = new Calendar();
+		 
 		var qa = function (a) {
 			return void 0 != a && -1 < (a.constructor + "")[_str_indexOf]("String")
 		}, sa = function (a) {
 			return a ? a[_replace](/^[\s\xa0]+|[\s\xa0]+$/g, "") : ""
 		};
 	
-		var gb = qa(_o_window.AnalyticsObject) && sa(_o_window.AnalyticsObject) || "ya";
+		var gb = qa(_o_window.AnalyticsObject) && sa(_o_window.AnalyticsObject) || "CA";
 		/**
-		 * È«¾Ö¹¤¾ß¶ÔÏó¡£
-		 * @param win {Window} ´°¿Ú¶ÔÏó¡£
-		 * @param doc {Document} ÎÄµµ¶ÔÏó¡£
+		 * å…¨å±€å·¥å…·å¯¹è±¡ã€‚
+		 * @param win {Window} çª—å£å¯¹è±¡ã€‚
+		 * @param doc {Document} æ–‡æ¡£å¯¹è±¡ã€‚
 		 */
 		var Global = function(win, doc){
 				var oThis = this;
@@ -67,34 +273,34 @@
 				oThis.document = doc;
 
 				/**
-				 * ¶¨Ê±Ö´ĞĞÖ¸¶¨µÄ»Øµ÷º¯Êı¡£
-				 * @param callback {Function} ĞèÒªÖ´ĞĞµÄ»Øµ÷º¯Êı¡£
-				 * @param delay {Int} ÑÓÊ±µÄ¼ä¸ô£¨ÒÔºÁÃë¼Æ£©¡£
+				 * å®šæ—¶æ‰§è¡ŒæŒ‡å®šçš„å›è°ƒå‡½æ•°ã€‚
+				 * @param callback {Function} éœ€è¦æ‰§è¡Œçš„å›è°ƒå‡½æ•°ã€‚
+				 * @param delay {Int} å»¶æ—¶çš„é—´éš”ï¼ˆä»¥æ¯«ç§’è®¡ï¼‰ã€‚
 				 */
 				oThis.setTimeout = function(callback, delay){
 					setTimeout(callback, delay);
 				};
 				
 				/**
-				 * ÓÃ»§´úÀíÍ·µÄ×Ö·û´®±íÊ¾(¾ÍÊÇ°üÀ¨ä¯ÀÀÆ÷°æ±¾ĞÅÏ¢µÈµÄ×Ö·û´®)ÊÇ·ñ°üº¬Ö¸¶¨µÄ×Ö·û´®¡£
-				 * @param key {String} Ö¸¶¨µÄ×Ö·û´®¡£
-				 * @return {Boolean} ÊÇ·ñ°üº¬¡£
+				 * ç”¨æˆ·ä»£ç†å¤´çš„å­—ç¬¦ä¸²è¡¨ç¤º(å°±æ˜¯åŒ…æ‹¬æµè§ˆå™¨ç‰ˆæœ¬ä¿¡æ¯ç­‰çš„å­—ç¬¦ä¸²)æ˜¯å¦åŒ…å«æŒ‡å®šçš„å­—ç¬¦ä¸²ã€‚
+				 * @param key {String} æŒ‡å®šçš„å­—ç¬¦ä¸²ã€‚
+				 * @return {Boolean} æ˜¯å¦åŒ…å«ã€‚
 				 */
 				oThis.contains = function(key){
 					return navigator.userAgent[_str_indexOf](key) >= 0;
 				};
 
 				/**
-				 * ÅĞ¶Ïä¯ÀÀÆ÷ÊÇ·ñÊÇFirefoxä¯ÀÀÆ÷¡£
-				 * @return {Boolean} ÊÇ·ñÊÇFirefoxä¯ÀÀÆ÷¡£
+				 * åˆ¤æ–­æµè§ˆå™¨æ˜¯å¦æ˜¯Firefoxæµè§ˆå™¨ã€‚
+				 * @return {Boolean} æ˜¯å¦æ˜¯Firefoxæµè§ˆå™¨ã€‚
 				 */
 				oThis.isFirefox = function(){
 					return oThis.contains("Firefox") && ![].reduce;
 				};
 
 				/**
-				 * ´¦ÀíÍøÒ³À´Ô´Ò³ÃæµÄURLµØÖ·¡£
-				 * @return {String} ´¦Àí¹ıµÄURLµØÖ·¡£
+				 * å¤„ç†ç½‘é¡µæ¥æºé¡µé¢çš„URLåœ°å€ã€‚
+				 * @return {String} å¤„ç†è¿‡çš„URLåœ°å€ã€‚
 				 */
 				oThis.processSource = function(source){
 					if(!source || !oThis.contains("Firefox")){
@@ -112,7 +318,7 @@
 			}
 
         /**
-         * È«¾Ö¹¤¾ß¶ÔÏóÊµÀı¡£
+         * å…¨å±€å·¥å…·å¯¹è±¡å®ä¾‹ã€‚
          */
         ,$Global = new Global(_o_window, document)
 		,analytics_domain = "https:" == $Global[_str_document][_location][_protocol] ? "https://ssl.dianjr.com/" : "http://www.dianjr.com/"
@@ -120,17 +326,17 @@
 		
 		
         /**
-         * ÓÃÓÚÏò·şÎñÆ÷·¢³öÇëÇóµÄ¶ÔÏó¡£
+         * ç”¨äºå‘æœåŠ¡å™¨å‘å‡ºè¯·æ±‚çš„å¯¹è±¡ã€‚
          */
-        Ajax = function(){
+        var Ajax = function(){
             var oThis = this;
 
             /**
-             * ·¢ËÍÇëÇó¡£
-             * @param url {String} ·¢ËÍÇëÇóµÄµØÖ·¡£
-             * @param param {String} ·¢ËÍÇëÇóµÄ²ÎÊı´®¡£
-             * @param mark {String} ÇëÇóµÄ±êÊ¶£¨°üÀ¨°æ±¾ºÅ¡¢Ëæ»úÕûÊıID¡¢UAÕËºÅ¡¢ÓòÃû¹şÏ£Öµ£©¡£
-             * @param callback {Function} »Øµ÷º¯Êı¡£
+             * å‘é€è¯·æ±‚ã€‚
+             * @param url {String} å‘é€è¯·æ±‚çš„åœ°å€ã€‚
+             * @param param {String} å‘é€è¯·æ±‚çš„å‚æ•°ä¸²ã€‚
+             * @param mark {String} è¯·æ±‚çš„æ ‡è¯†ï¼ˆåŒ…æ‹¬ç‰ˆæœ¬å·ã€éšæœºæ•´æ•°IDã€UAè´¦å·ã€åŸŸåå“ˆå¸Œå€¼ï¼‰ã€‚
+             * @param callback {Function} å›è°ƒå‡½æ•°ã€‚
              * @param _ioo {Boolean}
              */
             oThis.send = function(url, param, mark, callback, _ioo){
@@ -144,9 +350,9 @@
             };
 
             /**
-             * Ê¹ÓÃÍ¼Æ¬¶ÔÏó·¢³öÇëÇó¡£
-             * @param src {String} ×é×°Íê±ÏµÄÍ¼Æ¬µÄµØÖ·¡£
-             * @param callback {Function} »Øµ÷º¯Êı¡£
+             * ä½¿ç”¨å›¾ç‰‡å¯¹è±¡å‘å‡ºè¯·æ±‚ã€‚
+             * @param src {String} ç»„è£…å®Œæ¯•çš„å›¾ç‰‡çš„åœ°å€ã€‚
+             * @param callback {Function} å›è°ƒå‡½æ•°ã€‚
              */
             oThis.sendByImage = function(src, callback){
                 var image = new Image(1, 1);
@@ -158,18 +364,18 @@
             };
 
             /**
-             * ¸ù¾İÇé¿öÊ¹ÓÃXMLHttpRequest»òiframe¶ÔÏó·¢³öÇëÇó¡£
-             * @param param {String} ·¢ËÍÇëÇóµÄ²ÎÊı´®¡£
-             * @param callback {Function} »Øµ÷º¯Êı¡£
+             * æ ¹æ®æƒ…å†µä½¿ç”¨XMLHttpRequestæˆ–iframeå¯¹è±¡å‘å‡ºè¯·æ±‚ã€‚
+             * @param param {String} å‘é€è¯·æ±‚çš„å‚æ•°ä¸²ã€‚
+             * @param callback {Function} å›è°ƒå‡½æ•°ã€‚
              */
             oThis.Send = function(param, callback){
                 oThis.sendByRequest(param, callback) || oThis.sendByIFrame(param, callback)
             };
 
             /**
-             * Ê¹ÓÃXMLHttpRequest¶ÔÏó·¢³öÇëÇó¡£
-             * @param param {String} ·¢ËÍÇëÇóµÄ²ÎÊı´®¡£
-             * @param callback {Function} »Øµ÷º¯Êı¡£
+             * ä½¿ç”¨XMLHttpRequestå¯¹è±¡å‘å‡ºè¯·æ±‚ã€‚
+             * @param param {String} å‘é€è¯·æ±‚çš„å‚æ•°ä¸²ã€‚
+             * @param callback {Function} å›è°ƒå‡½æ•°ã€‚
              */
             oThis.sendByRequest = function(param, callback){
                 var request,
@@ -199,9 +405,9 @@
             };
 
             /**
-             * Ê¹ÓÃiframe¶ÔÏó·¢³öÇëÇó¡£
-             * @param param {String} ·¢ËÍÇëÇóµÄ²ÎÊı´®¡£
-             * @param callback {Function} »Øµ÷º¯Êı¡£
+             * ä½¿ç”¨iframeå¯¹è±¡å‘å‡ºè¯·æ±‚ã€‚
+             * @param param {String} å‘é€è¯·æ±‚çš„å‚æ•°ä¸²ã€‚
+             * @param callback {Function} å›è°ƒå‡½æ•°ã€‚
              */
             oThis.sendByIFrame = function(param, callback){
                 var doc = $Global[_str_document];
@@ -259,14 +465,20 @@
                         }, 100)
                 }
             }
-        },_ajax=new Ajax();
+        },ajax=new Ajax();
 		
-		//console.log(gb)
-		//console.log(_o_window[gb].q)
-		_queue = [];
 		for(i in _o_window[gb].q){
-			// _queue.push();
-			console.log(_o_window[gb].q[i]);
+	
+			var args = Array.prototype.slice.call(_o_window[gb].q[i]);   
+			var to,obc = args.shift(),fn= args.shift();
+				console.log(_o_window[obc]);
+			   _o_window[obc][fn].apply(to,args);
 		};
+		/**
+		try{
+			
+		}catch(e){
+			console.log(e.message);
+		}*/
 		
 })();
