@@ -171,7 +171,9 @@
 	console.log(elm);
 	text = getCode({"id":"10e1"},100,100);
 	fullDocument = _o_window[_str_document];
-	fullDocument.write(text);
+	//	fullDocument.write(text);
+	console.log(text);
+	elm.innerHTML = text;
 	//elm.appendChild(fullDocument);
 /*
 	f = document.createElement('div');
