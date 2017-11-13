@@ -2,49 +2,6 @@
 */
 (function(){
 	
-	var ji = function() {
-		var a = document.createElement("ins");
-		a.className = "adsbygoojo";
-		a.style.display = "none";
-		return a
-	};
-	var je = function(a) {
-			var b = ["adsbygoogle-placeholder"];
-			a = a.className ? a.className.split(/\s+/) : [];
-			for (var c = {}, d = 0; d < a.length; ++d) c[a[d]] = !0;
-			for (d = 0; d < b.length; ++d) if (!c[b[d]]) return !1;
-			return !0
-		};
-	var Yh = function(a, b, c) {
-			Xh(a, b, c, function(a, b, f) {
-				a = a.document;
-				for (var d = b.id, e = 0; !d || a.getElementById(d);) d = "aswift_" + e++;
-				b.id = d;
-				b.name = d;
-				d = Number(f.google_ad_width);
-				e = Number(f.google_ad_height);
-				16 == f.google_reactive_ad_format ? (f = a.createElement("div"), a = dg(b, d, e), f.innerHTML = a, c.appendChild(f.firstChild)) : (f = dg(b, d, e), c.innerHTML = f);
-				return b.id
-			})
-	};
-	
-	var kc = function(a, b) {
-			for (var c = 1, d = arguments.length; c < d; ++c) a.push(arguments[c])
-	};
-	
-	var getCode = function(ads, width, height) {
-		//width -> b
-		//height->c
-			var d = void 0 === d ? "" : d;
-			var iframeElement = ["<iframe"],
-				f;
-			iframeElement.push('style="' + ("left:0;position:absolute;top:0;width:" + width + "px;height:" + height + "px;") + '"');
-			iframeElement.push("></iframe>");
-			a_id = ads.id;
-			height = "border:none;height:" + height + "px;margin:0;padding:0;position:relative;visibility:visible;width:" + width + "px;background-color:transparent;";
-			return ['<ins id="', a_id + "_expand", '" style="display:inline-table;', height, void 0 === d ? "" : d, '"><ins id="', a_id + "_anchor", '" style="display:block;', height, '">', iframeElement.join(" "), "</ins></ins>"].join("")
-	};
-
 	
 	
 	var VERSION = "0.0.1"
@@ -100,7 +57,7 @@
 		}, sa = function (a) {
 			return a ? a[_replace](/^[\s\xa0]+|[\s\xa0]+$/g, "") : ""
 		};
-	
+	var ad_server = "http://127.0.0.1:8008/adx?";//广告服务器地址
 		var gb = qa(_o_window.AnalyticsObject) && sa(_o_window.AnalyticsObject) || "CA";
 		/**
 		 * 全局工具对象。
@@ -155,7 +112,22 @@
 					}
 					return source;
 				}
-			}
+		}
+		var getCode = function(ads, width, height) {
+		//width -> b
+		//height->c
+			var d = void 0 === d ? "" : d;
+			var iframeElement = ["<iframe"];
+			iframeElement.push("src = ");
+			iframeElement.push('"'+ ad_server +'"');
+			iframeElement.push('style="' + ("left:0;position:absolute;top:0;border:none;width:" + width + "px;height:" + height + "px;") + '"');
+			iframeElement.push("></iframe>");
+			a_id = ads.id;
+			height = "border:none;height:" + height + "px;margin:0;padding:0;position:relative;visibility:visible;width:" + width + "px;background-color:transparent;";
+			return ['<ins id="', a_id + "_expand", '" style="display:inline-table;', height, void 0 === d ? "" : d, '"><ins id="', a_id + "_anchor", '" style="display:block;', height, '">', iframeElement.join(" "), "</ins></ins>"].join("")
+	};
+
+
 	try{
 		for(i in _o_window[gb].q){
 	
@@ -173,7 +145,7 @@
 	fullDocument = _o_window[_str_document];
 	//	fullDocument.write(text);
 	console.log(text);
-	elm.innerHTML = text;
+	elm[0].innerHTML = text;
 	//elm.appendChild(fullDocument);
 /*
 	f = document.createElement('div');
