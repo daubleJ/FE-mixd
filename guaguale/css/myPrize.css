@@ -1,0 +1,85 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body{
+    background: #f0f0f0;
+}
+.wrap{
+    width: 6.4rem;
+    margin: 0 auto;
+}
+
+.head{
+    width: 100%;
+    height:.6rem ;
+    padding: .1rem 0;
+    background: url("../images/myprize-bg.png") no-repeat center;
+    background-size: contain;
+}
+.head>div{
+    float: left;
+    font-size: .22rem;
+    color: #fff;
+    line-height: .6rem;
+}
+.head .qq{
+    margin-left: 2.1rem;
+
+}
+.head .tel{
+    margin-left: .8rem;
+
+}
+.prize_list .item{
+    color: #333333;
+    display: block;
+    height: 1.1rem;
+    -webkit-box-sizing: padding-box;
+    -moz-box-sizing: padding-box;
+    box-sizing: padding-box;
+    padding: .2rem;
+    background: #fff;
+    border-top: 1px solid #eee;
+}
+.prize_list .item:first-child{
+    border-top: none;
+}
+.prize_list .item>div{
+    float: left;
+}
+.prize_list .item .left{
+    width: 1.78rem;
+    height: 1.1rem;
+    margin-right: .25rem;
+}
+.prize_list .item .left img{
+    width: 1.78rem;
+    height: 1.1rem;
+}
+.prize_list .item .center{
+}
+.prize_list .item .center h3{
+    box-sizing: border-box;
+    font-size: .28rem;
+    font-weight:normal;
+    margin:.1rem  0 .2rem;
+}
+.prize_list .item .center p{
+    font-size: .24rem;
+}
+.prize_list .item .right{
+    float: right;
+}
+.prize_list .item .right img{
+    display: block;
+    width: .24rem;
+    height: .36rem;
+    margin-top: .3rem;
+}
+.footer{
+    text-align: center;
+    line-height: .5rem;
+    font-size: .2rem;
+    color: #999;
+}
