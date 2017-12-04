@@ -10,6 +10,7 @@
     <script src="./js/jquery.1.11.1.min.js"></script>
     <script src="./js/swiper.min.js"></script>
     <link rel="stylesheet" href="./css/index.css">
+    <link rel="stylesheet" href="./css/animate.css">
 </head>
 <body>
 <img src="./images/cover.png" alt="" id="imgCover" style="display: none;">
@@ -19,6 +20,7 @@
         <div class="head">
             <div class="can_container">
                 <div id="can_con">
+                    <div class="animated tada infinite btn-shake">开始刮奖</div>
                     <canvas id="can"></canvas>
                 </div>
             </div>
@@ -136,21 +138,24 @@
     oGc.fillRect(0,0,300,200);
     oGc.closePath();
     /* 增加触摸监听*/
-    document.addEventListener("touchstart",fn1,false);
+    oCan.addEventListener("touchstart",fn1,false);
     function fn1(){
-        /* 初始化画笔*/
-        oGc.beginPath();
-        /* 画笔粗细*/
-        oGc.lineCap = 'round';
-        oGc.lineWidth = 30;
-        oGc.lineJoin = 'round';
-        /* 设置组合效果*/
-        oGc.globalCompositeOperation = 'destination-out';
-        /* 移动画笔原点*/
-        oGc.moveTo(event.touches[0].pageX-oLeft,event.touches[0].pageY-oTop);
+        if($('.btn-shake').css('display') === 'none'){
+            /* 初始化画笔*/
+            oGc.beginPath();
+            /* 画笔粗细*/
+            oGc.lineCap = 'round';
+            oGc.lineWidth = 30;
+            oGc.lineJoin = 'round';
+            /* 设置组合效果*/
+            oGc.globalCompositeOperation = 'destination-out';
+            /* 移动画笔原点*/
+            oGc.moveTo(event.touches[0].pageX-oLeft,event.touches[0].pageY-oTop);
+            document.addEventListener("touchmove",fn2);
+            document.addEventListener('touchend',fn3);
+        }
+
     };
-    console.log(111);
-    document.addEventListener("touchmove",fn2);
     function fn2(){
         /* 根据手指移动画线，使之变透明*/
         console.log(222);
@@ -179,7 +184,7 @@
         document.removeEventListener('touchmove',fn2);
         document.removeEventListener('touchend',fn3);
     }
-    document.addEventListener('touchend',fn3);
+
     /* 之所以会用到下面的那个函数getOffset（obj）
      * 是因为event.touches[0].pageX、pageY获取的是相对于可视窗口的距离
      * 而lineTo画笔的定位是根据画布位置定位的

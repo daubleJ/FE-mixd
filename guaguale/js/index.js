@@ -54,8 +54,7 @@ $(function () {
     $('.hongbao_model .close').click(function () {
         $('.hongbao_model').slideUp();
     });
-
-/*
-
-* */
+    $('.btn-shake').click(function () {
+        $(this).hide();
+    });
 });
